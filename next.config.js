@@ -4,8 +4,7 @@
 //   "@ilb/node_context",
 //   "@ilb/node_ldap",
 // ]);
-const basePath = '';
-// const basePath = "/dictionaries";
+const basePath = "/dictionaries";
 const config = {
   basePath,
   assetPrefix: basePath
