@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Универсальный справочник
+model Dictionary {
+  id           Int          @id @default(autoincrement())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime?    @updatedAt
+  code         String?      @db.VarChar(100)
+  name         String?      @db.VarChar(255)
+  begDate      DateTime?    @db.Date
+  endDate      DateTime?    @db.Date
+  dictionaries Dictionary[] @relation("dictionaryParent")
+  parent       Dictionary?  @relation("dictionaryParent", fields: [parentId], references: [id])
+  parentId     Int?
+
+  @@unique([parentId, code, name])
+}
