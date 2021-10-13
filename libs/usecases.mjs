@@ -1,7 +1,5 @@
 import application from './application.mjs';
 import { validateBySchema } from './utils/schemaValidation.mjs';
-import Response from './utils/Response.mjs';
-import { ValidationError, BadRequestError } from './utils/error.mjs';
 
 /**
  * create scope for usecase processing
@@ -24,8 +22,24 @@ export async function processUsecase(context, useCaseName) {
   return processUsecaseInstance(context, usecase);
 }
 
+/**
+ * Исполнить usecase для getServerSideProps
+ * @param context как в https://nextjs.org/docs/basic-features/data-fetching#getserversideprops-server-side-rendering
+ * @param usecase экземпляр usecase
+ * @returns
+ */
 export async function processUsecaseInstance(context, usecase) {
   const request = context.query;
+  // проверка прав доступа при наличии функции accessible
+  if (usecase.accessible) {
+    const accessible = await usecase.accessible(request);
+    if (!accessible) {
+      // FIXME - как то возвращать 403 (нет доступа)
+      return {
+        notFound: true
+      };
+    }
+  }
   const props = {
     request,
     response: await usecase.process(request),
@@ -45,31 +59,37 @@ export async function processUsecaseApiInstance(context, usecase) {
   return await usecase.process(request);
 }
 
-export async function processUsecaseApiInstance2(context, usecase) {
-  const request = context.query;
+export async function processUsecaseApiInstance2({ req, res }, usecase) {
+  const request = { ...req.query, ...req.body };
   const schema = await usecase.schema(request);
-
+  // проверка прав доступа при наличии функции accessible
+  if (usecase.accessible) {
+    const accessible = await usecase.accessible(request);
+    if (!accessible) {
+      res.status(403).end();
+      return;
+    }
+  }
   try {
     if (schema) {
       validateBySchema(request, schema);
     }
     const result = await usecase.process(request);
     if (result) {
-      let contentType = 'application/json';
-      if (typeof data === 'string') {
-        contentType = 'text/plain';
-      }
-      return Response.ok(result, contentType);
+      res.status(200).json(result);
     } else {
-      return Response.noContent();
+      res.status(204);
     }
   } catch (err) {
     console.log(err);
     const errName = err.constructor.name;
     if (errName == 'BadRequestError' || errName == 'ValidationError') {
-      return Response.badRequest(err.message);
+      //TODO: json responses if client accepts application/json?
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.status(400).send(err.message);
     } else {
-      return Response.internalError();
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.status(500).send('Internal error');
     }
   }
 }
