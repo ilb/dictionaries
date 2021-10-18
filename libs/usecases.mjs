@@ -1,5 +1,6 @@
 import application from './application.mjs';
 import { validateBySchema } from './utils/schemaValidation.mjs';
+import logger from './logger';
 
 /**
  * create scope for usecase processing
@@ -81,7 +82,7 @@ export async function processUsecaseApiInstance2({ req, res }, usecase) {
       res.status(204);
     }
   } catch (err) {
-    console.log(err);
+    logger.error(err);
     const errName = err.constructor.name;
     if (errName == 'BadRequestError' || errName == 'ValidationError') {
       //TODO: json responses if client accepts application/json?
