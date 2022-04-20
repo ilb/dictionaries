@@ -10,18 +10,25 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Универсальный справочник
+/// Универсальный справочник
 model Dictionary {
-  id           Int          @id @default(autoincrement())
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime?    @updatedAt
-  code         String?      @db.VarChar(100)
-  name         String?      @db.VarChar(255)
-  begDate      DateTime?    @db.Date
-  endDate      DateTime?    @db.Date
-  dictionaries Dictionary[] @relation("dictionaryParent")
-  parent       Dictionary?  @relation("dictionaryParent", fields: [parentId], references: [id])
-  parentId     Int?
+  ///Идентификатор
+  id         Int          @id @default(autoincrement())
+  ///Дата создания
+  createdAt  DateTime     @default(now())
+  ///Дата модификации
+  updatedAt  DateTime?    @updatedAt
+  ///Код
+  code       String?      @db.VarChar(100)
+  ///Наименование
+  name       String?      @db.VarChar(255)
+  begDate    DateTime?    @db.Date
+  endDate    DateTime?    @db.Date
+  ///Код родителя
+  parentId   Int?
+  ///Родитель
+  parent     Dictionary?  @relation("dictionaryParent", fields: [parentId], references: [id])
+  categories Dictionary[] @relation("dictionaryParent")
 
-  @@unique([parentId, code, name])
+  @@unique([parentId, code, name], name: "Dictionary_parentId_code_name_unique")
 }
