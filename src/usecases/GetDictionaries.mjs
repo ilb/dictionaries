@@ -4,8 +4,8 @@ export default class GetDictionaries {
   }
   async process({ parentCode, code }) {
     const rows = await this.dictionaryRepository.getDictionaries({ parentCode, code });
-    const result = rows.map(({ code, name }) => ({ code, name }));
-    return result;
+
+    return rows.map(({ code, name }) => ({ code, name }));
   }
 
   async schema() {
@@ -21,7 +21,7 @@ export default class GetDictionaries {
           type: 'string'
         }
       },
-      required: ['parentCode', 'code']
+      required: ['parentCode']
     };
   }
 }

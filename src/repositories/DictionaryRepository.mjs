@@ -7,7 +7,7 @@ export default class DictionaryRepository {
     return await this.prisma.dictionary.findMany({
       where: {
         parent: { code: parentCode },
-        code
+        ...(code && { code })
       }
     });
   }
